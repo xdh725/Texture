@@ -56,3 +56,14 @@ void ASPopMainThreadAssertionsDisabled() {
 }
 
 #endif // AS_TLS_AVAILABLE
+
+/**
+ * Throw an assertion for unimplemented methods.
+ */
+NSException *_ASNotImplementedException(SEL cmd, Class cls)
+{
+  NSString *msg = [NSString stringWithFormat:@"%s is not implemented "
+                   "for the class %@", sel_getName(cmd), cls];
+  return [NSException exceptionWithName:@"RCTNotDesignatedInitializerException"
+                                 reason:msg userInfo:nil];
+}

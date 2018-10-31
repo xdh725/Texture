@@ -386,6 +386,7 @@
 
 @end
 
+#if AS_ENABLE_LAYOUTSPECS
 
 #pragma mark -
 #pragma mark ASTextCellNode
@@ -483,3 +484,5 @@ static const CGFloat kASTextCellNodeDefaultVerticalPadding = 11.0f;
 }
 
 @end
+
+#endif

@@ -38,6 +38,10 @@
   #define AS_USE_ASSETS_LIBRARY 0
 #endif
 
+#ifndef AS_ENABLE_LAYOUTSPECS
+  #define AS_ENABLE_LAYOUTSPECS 1
+#endif
+
 #ifndef kCFCoreFoundationVersionNumber_iOS_10_0
   #define kCFCoreFoundationVersionNumber_iOS_10_0 1348.00
 #endif

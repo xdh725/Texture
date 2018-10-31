@@ -99,3 +99,6 @@ AS_EXTERN void ASPopMainThreadAssertionsDisabled(void);
   }                                                                                                                               \
   __evaluated;                                                                                                                    \
 })                                                                                                                                \
+
+/// Exception thrown if method is not implemented
+AS_EXTERN NSException *_ASNotImplementedException(SEL, Class);

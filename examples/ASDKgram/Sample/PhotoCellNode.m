@@ -94,7 +94,6 @@
     _userNameLabel.backgroundColor                    = [UIColor greenColor];
     _photoLocationLabel.backgroundColor               = [UIColor greenColor];
     _photoTimeIntervalSincePostLabel.backgroundColor  = [UIColor greenColor];
-    _photoCommentsNode.backgroundColor                = [UIColor greenColor];
     _photoDescriptionLabel.backgroundColor            = [UIColor greenColor];
     _photoLikesLabel.backgroundColor                  = [UIColor greenColor];
 #endif
@@ -103,7 +102,7 @@
   return self;
 }
 
-#if !YOGA_LAYOUT
+#if !YOGA_LAYOUT && AS_ENABLE_LAYOUTSPECS
 - (ASLayoutSpec *)layoutSpecThatFits:(ASSizeRange)constrainedSize
 {
   // There are many ways to format ASLayoutSpec code.  In this example, we offer two different formats:
@@ -288,7 +287,6 @@
   [_userAvatarImageNode.style yogaNodeCreateIfNeeded];
   [_userNameLabel.style yogaNodeCreateIfNeeded];
   [_photoImageNode.style yogaNodeCreateIfNeeded];
-  [_photoCommentsNode.style yogaNodeCreateIfNeeded];
   [_photoLikesLabel.style yogaNodeCreateIfNeeded];
   [_photoDescriptionLabel.style yogaNodeCreateIfNeeded];
   [_photoLocationLabel.style yogaNodeCreateIfNeeded];
@@ -329,13 +327,13 @@
   ASDisplayNode *footerStack = [ASDisplayNode yogaVerticalStack];
   footerStack.style.margin = ASEdgeInsetsMake(InsetForFooter);
   footerStack.style.padding = ASEdgeInsetsMake(UIEdgeInsetsMake(0.0, 0.0, VERTICAL_BUFFER, 0.0));
-  footerStack.yogaChildren = @[_photoLikesLabel, _photoDescriptionLabel, _photoCommentsNode];
+  footerStack.yogaChildren = @[_photoLikesLabel, _photoDescriptionLabel];
 
   // Main Vertical Stack: contains header, large main photo with fixed aspect ratio, and footer.
   _photoImageNode.style.aspectRatio = 1.0;
 
   ASDisplayNode *verticalStack = self;
-  self.style.flexDirection = ASStackLayoutDirectionVertical;
+  verticalStack.style.flexDirection = ASStackLayoutDirectionVertical;
 
   [verticalStack addYogaChild:headerStack];
   [verticalStack addYogaChild:_photoImageNode];

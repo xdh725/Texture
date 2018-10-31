@@ -34,6 +34,7 @@
 #import <AsyncDisplayKit/ASEqualityHelpers.h>
 #import <AsyncDisplayKit/ASGraphicsContext.h>
 #import <AsyncDisplayKit/ASInternalHelpers.h>
+#import <AsyncDisplayKit/ASLayout.h>
 #import <AsyncDisplayKit/ASLayoutElementStylePrivate.h>
 #import <AsyncDisplayKit/ASLayoutSpec.h>
 #import <AsyncDisplayKit/ASLayoutSpecPrivate.h>
@@ -1155,10 +1156,13 @@ ASSynthesizeLockingMethodsWithMutex(__instanceLock__);
 #endif /* YOGA */
   
   // Manual size calculation via calculateSizeThatFits:
+#if AS_ENABLE_LAYOUTSPECS
   if (_layoutSpecBlock == NULL && (_methodOverrides & ASDisplayNodeMethodOverrideLayoutSpecThatFits) == 0) {
+#endif
     CGSize size = [self calculateSizeThatFits:constrainedSize.max];
     ASDisplayNodeLogEvent(self, @"calculatedSize: %@", NSStringFromCGSize(size));
     return [ASLayout layoutWithLayoutElement:self size:ASSizeRangeClamp(constrainedSize, size) sublayouts:nil];
+#if AS_ENABLE_LAYOUTSPECS
   }
   
   // Size calcualtion with layout elements
@@ -1227,6 +1231,7 @@ ASSynthesizeLockingMethodsWithMutex(__instanceLock__);
   layout = [layout filteredNodeLayoutTree];
   
   return layout;
+#endif
 }
 
 - (CGSize)calculateSizeThatFits:(CGSize)constrainedSize

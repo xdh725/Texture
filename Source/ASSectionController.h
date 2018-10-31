@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @protocol ASSectionController <NSObject>
 
+@optional
+
 /**
  * A method to provide the node block for the item at the given index.
  * The node block you return will be run asynchronously off the main thread,
@@ -47,8 +49,6 @@ NS_ASSUME_NONNULL_BEGIN
  *   this method is not called when the item is about to display.
  */
 - (ASCellNode *)nodeForItemAtIndex:(NSInteger)index;
-
-@optional
 
 /**
  * Asks the section controller whether it should batch fetch because the user is
