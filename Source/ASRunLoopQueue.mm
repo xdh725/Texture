@@ -14,7 +14,7 @@
 #import <AsyncDisplayKit/ASRunLoopQueue.h>
 #import <AsyncDisplayKit/ASThread.h>
 #import <AsyncDisplayKit/ASSignpost.h>
-#import <QuartzCore/QuartzCore.h>
+
 #import <cstdlib>
 #import <deque>
 #import <vector>
@@ -32,8 +32,8 @@ static void runLoopSourceCallback(void *info) {
 #pragma mark - ASDeallocQueue
 
 @implementation ASDeallocQueue {
-  std::vector<CFTypeRef> _queue;
   ASDN::Mutex _lock;
+  std::vector<CFTypeRef> _queue GUARDED_BY(_lock);
 }
 
 + (ASDeallocQueue *)sharedDeallocationQueue NS_RETURNS_RETAINED

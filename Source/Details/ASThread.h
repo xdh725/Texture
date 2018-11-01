@@ -21,6 +21,72 @@
 #import <AsyncDisplayKit/ASConfigurationInternal.h>
 #import <AsyncDisplayKit/ASRecursiveUnfairLock.h>
 
+// Enable thread safety attributes only with clang.
+// The attributes can be safely erased when compiling with other compilers.
+#if defined(__clang__) && (!defined(SWIG))
+#define THREAD_ANNOTATION_ATTRIBUTE__(x)   __attribute__((x))
+#else
+#define THREAD_ANNOTATION_ATTRIBUTE__(x)   // no-op
+#endif
+
+#define CAPABILITY(x) \
+  THREAD_ANNOTATION_ATTRIBUTE__(capability(x))
+
+#define SCOPED_CAPABILITY \
+  THREAD_ANNOTATION_ATTRIBUTE__(scoped_lockable)
+
+#define GUARDED_BY(x) \
+  THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x))
+
+#define PT_GUARDED_BY(x) \
+  THREAD_ANNOTATION_ATTRIBUTE__(pt_guarded_by(x))
+
+#define ACQUIRED_BEFORE(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(acquired_before(__VA_ARGS__))
+
+#define ACQUIRED_AFTER(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(acquired_after(__VA_ARGS__))
+
+#define REQUIRES(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(requires_capability(__VA_ARGS__))
+
+#define REQUIRES_SHARED(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(requires_shared_capability(__VA_ARGS__))
+
+#define ACQUIRE(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(acquire_capability(__VA_ARGS__))
+
+#define ACQUIRE_SHARED(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(acquire_shared_capability(__VA_ARGS__))
+
+#define RELEASE(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(release_capability(__VA_ARGS__))
+
+#define RELEASE_SHARED(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(release_shared_capability(__VA_ARGS__))
+
+#define TRY_ACQUIRE(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(try_acquire_capability(__VA_ARGS__))
+
+#define TRY_ACQUIRE_SHARED(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(try_acquire_shared_capability(__VA_ARGS__))
+
+#define EXCLUDES(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(locks_excluded(__VA_ARGS__))
+
+#define ASSERT_CAPABILITY(x) \
+  THREAD_ANNOTATION_ATTRIBUTE__(assert_capability(x))
+
+#define ASSERT_SHARED_CAPABILITY(x) \
+  THREAD_ANNOTATION_ATTRIBUTE__(assert_shared_capability(x))
+
+#define RETURN_CAPABILITY(x) \
+  THREAD_ANNOTATION_ATTRIBUTE__(lock_returned(x))
+
+#define NO_THREAD_SAFETY_ANALYSIS \
+  THREAD_ANNOTATION_ATTRIBUTE__(no_thread_safety_analysis)
+
+
 ASDISPLAYNODE_INLINE AS_WARN_UNUSED_RESULT BOOL ASDisplayNodeThreadIsMain()
 {
   return 0 != pthread_main_np();
@@ -144,7 +210,7 @@ ASDISPLAYNODE_INLINE void _ASUnlockScopeCleanup(id<NSLocking> __strong *lockPtr)
 namespace ASDN {
   
   template<class T>
-  class Locker
+  class SCOPED_CAPABILITY Locker
   {
     T &_l;
 
@@ -156,11 +222,11 @@ namespace ASDN {
   public:
 #if !TIME_LOCKER
 
-    Locker (T &l) noexcept : _l (l) {
+    Locker (T &l) noexcept ACQUIRE(l) : _l (l) {
       _l.lock ();
     }
 
-    ~Locker () {
+    ~Locker () RELEASE() {
       _l.unlock ();
     }
 
@@ -170,12 +236,12 @@ namespace ASDN {
 
 #else
 
-    Locker (T &l, const char *name = NULL) noexcept : _l (l), _name(name) {
+    Locker (T &l, const char *name = NULL) noexcept ACQUIRE(l) : _l (l), _name(name) {
       _ti = CACurrentMediaTime();
       _l.lock ();
     }
 
-    ~Locker () {
+    ~Locker () RELEASE() {
       _l.unlock ();
       if (_name) {
         printf(_name, NULL);
@@ -188,7 +254,7 @@ namespace ASDN {
   };
 
   template<class T>
-  class SharedLocker
+  class SCOPED_CAPABILITY SharedLocker
   {
     std::shared_ptr<T> _l;
     
@@ -200,12 +266,12 @@ namespace ASDN {
   public:
 #if !TIME_LOCKER
     
-    SharedLocker (std::shared_ptr<T> const& l) noexcept : _l (l) {
+    SharedLocker (std::shared_ptr<T> const& l) noexcept ACQUIRE_SHARED(l) : _l (l) {
       ASDisplayNodeCAssertTrue(_l != nullptr);
       _l->lock ();
     }
     
-    ~SharedLocker () {
+    ~SharedLocker () RELEASE_SHARED() {
       _l->unlock ();
     }
     
@@ -215,12 +281,12 @@ namespace ASDN {
     
 #else
     
-    SharedLocker (std::shared_ptr<T> const& l, const char *name = NULL) noexcept : _l (l), _name(name) {
+    SharedLocker (std::shared_ptr<T> const& l, const char *name = NULL) noexcept ACQUIRE_SHARED(l) : _l (l), _name(name) {
       _ti = CACurrentMediaTime();
       _l->lock ();
     }
     
-    ~SharedLocker () {
+    ~SharedLocker () RELEASE_SHARED() {
       _l->unlock ();
       if (_name) {
         printf(_name, NULL);
@@ -237,8 +303,8 @@ namespace ASDN {
   {
     T &_l;
   public:
-    Unlocker (T &l) noexcept : _l (l) { _l.unlock (); }
-    ~Unlocker () {_l.lock ();}
+    Unlocker (T &l) noexcept RELEASE(l) : _l (l) { _l.unlock (); }
+    ~Unlocker () ACQUIRE(_l) {_l.lock ();}
     Unlocker(Unlocker<T>&) = delete;
     Unlocker &operator=(Unlocker<T>&) = delete;
   };
@@ -251,7 +317,7 @@ namespace ASDN {
 // and not again.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability"
-  struct Mutex
+  struct CAPABILITY("mutex") Mutex
   {
     /// Constructs a non-recursive mutex (the default).
     Mutex () : Mutex (false) {}
@@ -271,7 +337,7 @@ namespace ASDN {
     Mutex (const Mutex&) = delete;
     Mutex &operator=(const Mutex&) = delete;
 
-    bool tryLock() {
+    bool tryLock() TRY_ACQUIRE(true) {
       if (gMutex_unfair) {
         if (_recursive) {
           return ASRecursiveUnfairLockTryLock(&_runfair);
@@ -290,7 +356,7 @@ namespace ASDN {
         }
       }
     }
-    void lock() {
+    void lock() ACQUIRE() {
       if (gMutex_unfair) {
         if (_recursive) {
           ASRecursiveUnfairLockLock(&_runfair);
@@ -315,7 +381,7 @@ namespace ASDN {
 #endif
     }
 
-    void unlock () {
+    void unlock () RELEASE() {
 #if CHECK_LOCKING_SAFETY
       mach_port_t thread_id = pthread_mach_thread_np(pthread_self());
       // Unlocking a mutex on an unowning thread causes undefined behaviour. Assert and fail early.
