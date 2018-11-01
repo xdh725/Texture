@@ -405,7 +405,7 @@ namespace ASDN {
       }
     }
 
-    pthread_mutex_t *mutex () { return &_m; }
+    pthread_mutex_t *mutex () RETURN_CAPABILITY(_m) { return &_m; }
 
 #if CHECK_LOCKING_SAFETY
     bool locked() {
@@ -491,7 +491,7 @@ namespace ASDN {
    Note that you can, but should not, use StaticMutex for non-static objects. It will leak its mutex on destruction,
    so avoid that!
    */
-  struct StaticMutex
+  struct CAPABILITY("mutex") StaticMutex
   {
     StaticMutex () : _m (PTHREAD_MUTEX_INITIALIZER) {}
 
@@ -499,15 +499,15 @@ namespace ASDN {
     StaticMutex(const StaticMutex&) = delete;
     StaticMutex &operator=(const StaticMutex&) = delete;
 
-    void lock () {
+    void lock () ACQUIRE() {
       AS_POSIX_ASSERT_NOERR(pthread_mutex_lock (this->mutex()));
     }
 
-    void unlock () {
+    void unlock () RELEASE() {
       AS_POSIX_ASSERT_NOERR(pthread_mutex_unlock (this->mutex()));
     }
 
-    pthread_mutex_t *mutex () { return &_m; }
+    pthread_mutex_t *mutex () RETURN_CAPABILITY(_m) { return &_m; }
 
   private:
     pthread_mutex_t _m;
