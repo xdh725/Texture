@@ -266,12 +266,12 @@ namespace ASDN {
   public:
 #if !TIME_LOCKER
     
-    SharedLocker (std::shared_ptr<T> const& l) noexcept ACQUIRE_SHARED(l) : _l (l) {
+    SharedLocker (std::shared_ptr<T> const& l) noexcept ACQUIRE(l) : _l (l) {
       ASDisplayNodeCAssertTrue(_l != nullptr);
       _l->lock ();
     }
     
-    ~SharedLocker () RELEASE_SHARED() {
+    ~SharedLocker () RELEASE() {
       _l->unlock ();
     }
     
@@ -281,12 +281,12 @@ namespace ASDN {
     
 #else
     
-    SharedLocker (std::shared_ptr<T> const& l, const char *name = NULL) noexcept ACQUIRE_SHARED(l) : _l (l), _name(name) {
+    SharedLocker (std::shared_ptr<T> const& l, const char *name = NULL) noexcept ACQUIRE(l) : _l (l), _name(name) {
       _ti = CACurrentMediaTime();
       _l->lock ();
     }
     
-    ~SharedLocker () RELEASE_SHARED() {
+    ~SharedLocker () RELEASE() {
       _l->unlock ();
       if (_name) {
         printf(_name, NULL);
