@@ -221,8 +221,6 @@ AS_CATEGORY_IMPLEMENTABLE
  * @abstract Called when the node's ASTraitCollection changes
  *
  * @discussion Subclasses can override this method to react to a trait collection change.
- * The default implementation does nothing, so you can implement this method
- * in a category to apply global behaviors to nodes.
  */
 AS_CATEGORY_IMPLEMENTABLE
 - (void)asyncTraitCollectionDidChange;

@@ -3413,7 +3413,7 @@ ASDISPLAYNODE_INLINE BOOL subtreeIsRasterized(ASDisplayNode *node) {
   [self didExitPreloadState];
   [self enumerateInterfaceStateDelegates:^(id<ASInterfaceStateDelegate> del) {
     [del didExitPreloadState];
-  }];  
+  }];
 }
 
 - (void)clearContents
