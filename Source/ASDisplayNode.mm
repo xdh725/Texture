@@ -598,11 +598,6 @@ ASSynthesizeLockingMethodsWithMutex(__instanceLock__);
   }];
 }
 
-- (void)didLoad
-{
-  // Subclass hook
-}
-
 - (BOOL)isNodeLoaded
 {
   if (ASDisplayNodeThreadIsMain()) {
@@ -1547,11 +1542,6 @@ NSString * const ASRenderingEngineDidDisplayNodesScheduledBeforeTimestamp = @"AS
     }
     __instanceLock__.unlock();
   }
-}
-
-- (void)hierarchyDisplayDidFinish
-{
-  // Subclass hook
 }
 
 // Helper method to determine if it's safe to call setNeedsDisplay on a layer without throwing away the content.
