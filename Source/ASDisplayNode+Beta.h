@@ -141,18 +141,14 @@ typedef struct {
  * and other nodes that are ready to do their final display). Each render of every progressive jpeg network node would cause this to be called, so
  * this hook could be called up to 1 + (pJPEGcount * pJPEGrenderCount) times. The render count depends on how many times the downloader calls the
  * progressImage block.
- *
- * The default implementation does nothing so you can implement this
- * in a category to apply global behavior to nodes.
  */
+AS_CATEGORY_IMPLEMENTABLE
 - (void)hierarchyDisplayDidFinish NS_REQUIRES_SUPER;
 
 /**
  * Only called on the root during yoga layout.
- *
- * The default implementation does nothing so you can implement this
- * in a category to apply global behavior to nodes.
  */
+AS_CATEGORY_IMPLEMENTABLE
 - (void)willCalculateLayout:(ASSizeRange)constrainedSize NS_REQUIRES_SUPER;
 
 /**

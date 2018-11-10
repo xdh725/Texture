@@ -67,22 +67,22 @@ NS_ASSUME_NONNULL_BEGIN
  * @abstract Called on the main thread immediately after self.view is created.
  *
  * @discussion This is the best time to add gesture recognizers to the view.
- *
- * The default implementation does nothing, so you can implement this method
- * in a category to apply global behaviors to nodes.
  */
+AS_CATEGORY_IMPLEMENTABLE
 - (void)didLoad ASDISPLAYNODE_REQUIRES_SUPER;
 
 /**
  * An empty method that you can implement in a category to add global
  * node initialization behavior. This method will be called by [ASDisplayNode init].
- */ 
+ */
+AS_CATEGORY_IMPLEMENTABLE
 - (void)globalInit;
 
 /**
  * An empty method that you can implement in a category to add global
  * node deallocation behavior. This method will be called by [ASDisplayNode dealloc].
- */ 
+ */
+AS_CATEGORY_IMPLEMENTABLE
 - (void)globalDealloc;
 
 #pragma mark - Layout
@@ -100,10 +100,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @discussion Gives a chance for subclasses to perform actions after the subclass and superclass have finished laying
  * out.
- *
- * The default implementation does nothing, so you can implement this method
- * in a category to apply global behaviors to nodes.
  */
+AS_CATEGORY_IMPLEMENTABLE
 - (void)layoutDidFinish ASDISPLAYNODE_REQUIRES_SUPER;
 
 /**
@@ -111,10 +109,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @discussion When the .calculatedLayout property is set to a new ASLayout (directly from -calculateLayoutThatFits: or
  * calculated via use of -layoutSpecThatFits:), subclasses may inspect it here.
- *
- * The default implementation does nothing, so you can implement this method
- * in a category to apply global behaviors to nodes.
  */
+AS_CATEGORY_IMPLEMENTABLE
 - (void)calculatedLayoutDidChange ASDISPLAYNODE_REQUIRES_SUPER;
 
 
@@ -197,19 +193,27 @@ NS_ASSUME_NONNULL_BEGIN
 /**
   * Declare <ASInterfaceStateDelegate> methods as requiring super calls (this can't be required in the protocol).
   * For descriptions, see <ASInterfaceStateDelegate> definition.
-  * The default implementations do nothing, so you can implement these methods
-  * in a category to apply global behaviors to nodes.
   */
 
+AS_CATEGORY_IMPLEMENTABLE
 - (void)didEnterVisibleState ASDISPLAYNODE_REQUIRES_SUPER;
+
+AS_CATEGORY_IMPLEMENTABLE
 - (void)didExitVisibleState  ASDISPLAYNODE_REQUIRES_SUPER;
 
+AS_CATEGORY_IMPLEMENTABLE
 - (void)didEnterDisplayState ASDISPLAYNODE_REQUIRES_SUPER;
+
+AS_CATEGORY_IMPLEMENTABLE
 - (void)didExitDisplayState  ASDISPLAYNODE_REQUIRES_SUPER;
 
+AS_CATEGORY_IMPLEMENTABLE
 - (void)didEnterPreloadState ASDISPLAYNODE_REQUIRES_SUPER;
+
+AS_CATEGORY_IMPLEMENTABLE
 - (void)didExitPreloadState  ASDISPLAYNODE_REQUIRES_SUPER;
 
+AS_CATEGORY_IMPLEMENTABLE
 - (void)interfaceStateDidChange:(ASInterfaceState)newState
                       fromState:(ASInterfaceState)oldState ASDISPLAYNODE_REQUIRES_SUPER;
 
