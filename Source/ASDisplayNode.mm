@@ -104,6 +104,9 @@ _ASPendingState *ASDisplayNodeGetPendingState(ASDisplayNode *node)
   return result;
 }
 
+void StubImplementationWithNoArgs(id receiver) {}
+void StubImplementationWithSizeRange(id receiver, ASSizeRange sr) {}
+
 /**
  *  Returns ASDisplayNodeFlags for the given class/instance. instance MAY BE NIL.
  *
@@ -247,6 +250,25 @@ static ASDisplayNodeMethodOverrides GetASDisplayNodeMethodOverrides(Class c)
   });
 
   class_replaceMethod(self, @selector(_staticInitialize), staticInitialize, "v:@");
+  
+  // Add stub implementations for global methods that the client didn't
+  // implement in a category. We do this instead of hard-coding empty
+  // implementations to avoid a linker warning when it merges categories.
+  // Note: addMethod will not do anything if a method already exists.
+  if (self == ASDisplayNode.class) {
+    IMP noArgsImp = (IMP)StubImplementationWithNoArgs;
+    class_addMethod(self, @selector(globalInit), noArgsImp, "v@:");
+    class_addMethod(self, @selector(globalDealloc), noArgsImp, "v@:");
+    class_addMethod(self, @selector(didLoad), noArgsImp, "v@:");
+    class_addMethod(self, @selector(didEnterPreloadState), noArgsImp, "v@:");
+    class_addMethod(self, @selector(didExitPreloadState), noArgsImp, "v@:");
+    class_addMethod(self, @selector(didEnterDisplayState), noArgsImp, "v@:");
+    class_addMethod(self, @selector(didExitDisplayState), noArgsImp, "v@:");
+    class_addMethod(self, @selector(didEnterVisibleState), noArgsImp, "v@:");
+    class_addMethod(self, @selector(didExitVisibleState), noArgsImp, "v@:");
+    class_addMethod(self, @selector(hierarchyDisplayDidFinish), noArgsImp, "v@:");
+    class_addMethod(self, @selector(willCalculateLayout:), (IMP)StubImplementationWithSizeRange, "v@:{?={CGSize=dd}{CGSize=dd}}");
+  }
 }
 
 #if !AS_INITIALIZE_FRAMEWORK_MANUALLY
@@ -309,6 +331,7 @@ static ASDisplayNodeMethodOverrides GetASDisplayNodeMethodOverrides(Class c)
   _automaticallyRelayoutOnSafeAreaChanges = NO;
   _automaticallyRelayoutOnLayoutMarginsChanges = NO;
 
+  [self globalInit];
   ASDisplayNodeLogEvent(self, @"init");
 }
 
@@ -453,6 +476,8 @@ ASSynthesizeLockingMethodsWithMutex(__instanceLock__);
 
   // TODO: Remove this? If supernode isn't already nil, this method isn't dealloc-safe anyway.
   [self _setSupernode:nil];
+  
+  [self globalDealloc];
 }
 
 #pragma mark - Loading
@@ -575,8 +600,6 @@ ASSynthesizeLockingMethodsWithMutex(__instanceLock__);
 
 - (void)didLoad
 {
-  ASDisplayNodeAssertMainThread();
-  
   // Subclass hook
 }
 
@@ -1301,6 +1324,8 @@ ASSynthesizeLockingMethodsWithMutex(__instanceLock__);
 
   [self _pendingLayoutTransitionDidComplete];
 }
+
+- (void)willCalculateLayout:(ASSizeRange)constrainedSize { }
 
 - (void)calculatedLayoutDidChange
 {
@@ -3137,12 +3162,12 @@ ASDISPLAYNODE_INLINE BOOL subtreeIsRasterized(ASDisplayNode *node) {
   
   if (nowPreload != wasPreload) {
     if (nowPreload) {
-      [self didEnterPreloadState];
+      [self _didEnterPreloadState];
     } else {
       // We don't want to call -didExitPreloadState on nodes that aren't being managed by a range controller.
       // Otherwise we get flashing behavior from normal UIKit manipulations like navigation controller push / pop.
       if ([self supportsRangeManagedInterfaceState]) {
-        [self didExitPreloadState];
+        [self _didExitPreloadState];
       }
     }
   }
@@ -3193,9 +3218,9 @@ ASDISPLAYNODE_INLINE BOOL subtreeIsRasterized(ASDisplayNode *node) {
     }
     
     if (nowDisplay) {
-      [self didEnterDisplayState];
+      [self _didEnterDisplayState];
     } else {
-      [self didExitDisplayState];
+      [self _didExitDisplayState];
     }
   }
 
@@ -3206,9 +3231,9 @@ ASDISPLAYNODE_INLINE BOOL subtreeIsRasterized(ASDisplayNode *node) {
 
   if (nowVisible != wasVisible) {
     if (nowVisible) {
-      [self didEnterVisibleState];
+      [self _didEnterVisibleState];
     } else {
-      [self didExitVisibleState];
+      [self _didExitVisibleState];
     }
   }
 
@@ -3220,7 +3245,7 @@ ASDISPLAYNODE_INLINE BOOL subtreeIsRasterized(ASDisplayNode *node) {
   }
   
   ASDisplayNodeLogEvent(self, @"interfaceStateDidChange: %@", NSStringFromASInterfaceStateChange(oldState, newState));
-  [self interfaceStateDidChange:newState fromState:oldState];
+  [self _interfaceStateDidChange:newState fromState:oldState];
 }
 
 - (void)prepareForCATransactionCommit
@@ -3229,15 +3254,17 @@ ASDISPLAYNODE_INLINE BOOL subtreeIsRasterized(ASDisplayNode *node) {
   [self applyPendingInterfaceState:ASInterfaceStateNone];
 }
 
-- (void)interfaceStateDidChange:(ASInterfaceState)newState fromState:(ASInterfaceState)oldState
+- (void)_interfaceStateDidChange:(ASInterfaceState)newState fromState:(ASInterfaceState)oldState
 {
-  // Subclass hook
   ASAssertUnlocked(__instanceLock__);
   ASDisplayNodeAssertMainThread();
+  [self interfaceStateDidChange:newState fromState:oldState];
   [self enumerateInterfaceStateDelegates:^(id<ASInterfaceStateDelegate> del) {
     [del interfaceStateDidChange:newState fromState:oldState];
   }];
 }
+
+- (void)interfaceStateDidChange:(ASInterfaceState)newState fromState:(ASInterfaceState)oldState { }
 
 - (BOOL)shouldScheduleDisplayWithNewInterfaceState:(ASInterfaceState)newInterfaceState
 {
@@ -3276,9 +3303,8 @@ ASDISPLAYNODE_INLINE BOOL subtreeIsRasterized(ASDisplayNode *node) {
   return ASInterfaceStateIncludesVisible(_interfaceState);
 }
 
-- (void)didEnterVisibleState
+- (void)_didEnterVisibleState
 {
-  // subclass override
   ASDisplayNodeAssertMainThread();
   
 #if ASDISPLAYNODE_ASSERTIONS_ENABLED
@@ -3289,6 +3315,7 @@ ASDISPLAYNODE_INLINE BOOL subtreeIsRasterized(ASDisplayNode *node) {
 #endif
   
   ASAssertUnlocked(__instanceLock__);
+  [self didEnterVisibleState];
   [self enumerateInterfaceStateDelegates:^(id<ASInterfaceStateDelegate> del) {
     [del didEnterVisibleState];
   }];
@@ -3298,11 +3325,11 @@ ASDISPLAYNODE_INLINE BOOL subtreeIsRasterized(ASDisplayNode *node) {
 #endif
 }
 
-- (void)didExitVisibleState
+- (void)_didExitVisibleState
 {
-  // subclass override
   ASDisplayNodeAssertMainThread();
   ASAssertUnlocked(__instanceLock__);
+  [self didExitVisibleState];
   [self enumerateInterfaceStateDelegates:^(id<ASInterfaceStateDelegate> del) {
     [del didExitVisibleState];
   }];
@@ -3314,21 +3341,21 @@ ASDISPLAYNODE_INLINE BOOL subtreeIsRasterized(ASDisplayNode *node) {
   return ASInterfaceStateIncludesDisplay(_interfaceState);
 }
 
-- (void)didEnterDisplayState
+- (void)_didEnterDisplayState
 {
-  // subclass override
   ASDisplayNodeAssertMainThread();
   ASAssertUnlocked(__instanceLock__);
+  [self didEnterDisplayState];
   [self enumerateInterfaceStateDelegates:^(id<ASInterfaceStateDelegate> del) {
     [del didEnterDisplayState];
   }];
 }
 
-- (void)didExitDisplayState
+- (void)_didExitDisplayState
 {
-  // subclass override
   ASDisplayNodeAssertMainThread();
   ASAssertUnlocked(__instanceLock__);
+  [self didExitDisplayState];
   [self enumerateInterfaceStateDelegates:^(id<ASInterfaceStateDelegate> del) {
     [del didExitDisplayState];
   }];
@@ -3365,11 +3392,12 @@ ASDISPLAYNODE_INLINE BOOL subtreeIsRasterized(ASDisplayNode *node) {
   });
 }
 
-- (void)didEnterPreloadState
+- (void)_didEnterPreloadState
 {
   ASDisplayNodeAssertMainThread();
   ASAssertUnlocked(__instanceLock__);
-
+  [self didEnterPreloadState];
+  
   // If this node has ASM enabled and is not yet visible, force a layout pass to apply its applicable pending layout, if any,
   // so that its subnodes are inserted/deleted and start preloading right away.
   //
@@ -3387,13 +3415,14 @@ ASDISPLAYNODE_INLINE BOOL subtreeIsRasterized(ASDisplayNode *node) {
   }];
 }
 
-- (void)didExitPreloadState
+- (void)_didExitPreloadState
 {
   ASDisplayNodeAssertMainThread();
   ASAssertUnlocked(__instanceLock__);
+  [self didExitPreloadState];
   [self enumerateInterfaceStateDelegates:^(id<ASInterfaceStateDelegate> del) {
     [del didExitPreloadState];
-  }];
+  }];  
 }
 
 - (void)clearContents

@@ -296,6 +296,7 @@
     return;
   }
 
+  [self willCalculateLayout:rootConstrainedSize];
   [self enumerateInterfaceStateDelegates:^(id<ASInterfaceStateDelegate>  _Nonnull delegate) {
     if ([delegate respondsToSelector:@selector(nodeWillCalculateLayout:)]) {
       [delegate nodeWillCalculateLayout:rootConstrainedSize];

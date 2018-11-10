@@ -67,9 +67,23 @@ NS_ASSUME_NONNULL_BEGIN
  * @abstract Called on the main thread immediately after self.view is created.
  *
  * @discussion This is the best time to add gesture recognizers to the view.
+ *
+ * The default implementation does nothing, so you can implement this method
+ * in a category to apply global behaviors to nodes.
  */
 - (void)didLoad ASDISPLAYNODE_REQUIRES_SUPER;
 
+/**
+ * An empty method that you can implement in a category to add global
+ * node initialization behavior. This method will be called by [ASDisplayNode init].
+ */ 
+- (void)globalInit;
+
+/**
+ * An empty method that you can implement in a category to add global
+ * node deallocation behavior. This method will be called by [ASDisplayNode dealloc].
+ */ 
+- (void)globalDealloc;
 
 #pragma mark - Layout
 /** @name Layout */
@@ -86,6 +100,9 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @discussion Gives a chance for subclasses to perform actions after the subclass and superclass have finished laying
  * out.
+ *
+ * The default implementation does nothing, so you can implement this method
+ * in a category to apply global behaviors to nodes.
  */
 - (void)layoutDidFinish ASDISPLAYNODE_REQUIRES_SUPER;
 
@@ -94,6 +111,9 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @discussion When the .calculatedLayout property is set to a new ASLayout (directly from -calculateLayoutThatFits: or
  * calculated via use of -layoutSpecThatFits:), subclasses may inspect it here.
+ *
+ * The default implementation does nothing, so you can implement this method
+ * in a category to apply global behaviors to nodes.
  */
 - (void)calculatedLayoutDidChange ASDISPLAYNODE_REQUIRES_SUPER;
 
@@ -177,6 +197,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
   * Declare <ASInterfaceStateDelegate> methods as requiring super calls (this can't be required in the protocol).
   * For descriptions, see <ASInterfaceStateDelegate> definition.
+  * The default implementations do nothing, so you can implement these methods
+  * in a category to apply global behaviors to nodes.
   */
 
 - (void)didEnterVisibleState ASDISPLAYNODE_REQUIRES_SUPER;
@@ -195,6 +217,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @abstract Called when the node's ASTraitCollection changes
  *
  * @discussion Subclasses can override this method to react to a trait collection change.
+ * The default implementation does nothing, so you can implement this method
+ * in a category to apply global behaviors to nodes.
  */
 - (void)asyncTraitCollectionDidChange;
 
