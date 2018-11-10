@@ -106,6 +106,7 @@ _ASPendingState *ASDisplayNodeGetPendingState(ASDisplayNode *node)
 
 void StubImplementationWithNoArgs(id receiver) {}
 void StubImplementationWithSizeRange(id receiver, ASSizeRange sr) {}
+void StubImplementationWithTwoInterfaceStates(id receiver, ASInterfaceState s0, ASInterfaceState s1) {}
 
 /**
  *  Returns ASDisplayNodeFlags for the given class/instance. instance MAY BE NIL.
@@ -251,6 +252,7 @@ static ASDisplayNodeMethodOverrides GetASDisplayNodeMethodOverrides(Class c)
 
   class_replaceMethod(self, @selector(_staticInitialize), staticInitialize, "v:@");
   
+  const char *interfacestate = @encode(ASInterfaceState);
   // Add stub implementations for global methods that the client didn't
   // implement in a category. We do this instead of hard-coding empty
   // implementations to avoid a linker warning when it merges categories.
@@ -260,6 +262,7 @@ static ASDisplayNodeMethodOverrides GetASDisplayNodeMethodOverrides(Class c)
     class_addMethod(self, @selector(globalInit), noArgsImp, "v@:");
     class_addMethod(self, @selector(globalDealloc), noArgsImp, "v@:");
     class_addMethod(self, @selector(didLoad), noArgsImp, "v@:");
+    class_addMethod(self, @selector(layoutDidFinish), noArgsImp, "v@:");
     class_addMethod(self, @selector(didEnterPreloadState), noArgsImp, "v@:");
     class_addMethod(self, @selector(didExitPreloadState), noArgsImp, "v@:");
     class_addMethod(self, @selector(didEnterDisplayState), noArgsImp, "v@:");
@@ -267,7 +270,13 @@ static ASDisplayNodeMethodOverrides GetASDisplayNodeMethodOverrides(Class c)
     class_addMethod(self, @selector(didEnterVisibleState), noArgsImp, "v@:");
     class_addMethod(self, @selector(didExitVisibleState), noArgsImp, "v@:");
     class_addMethod(self, @selector(hierarchyDisplayDidFinish), noArgsImp, "v@:");
-    class_addMethod(self, @selector(willCalculateLayout:), (IMP)StubImplementationWithSizeRange, "v@:{?={CGSize=dd}{CGSize=dd}}");
+    
+    auto type0 = "v@:" + std::string(@encode(ASSizeRange));
+    class_addMethod(self, @selector(willCalculateLayout:), (IMP)StubImplementationWithSizeRange, type0.c_str());
+    
+    auto interfaceStateType = std::string(@encode(ASInterfaceState));
+    auto type1 = "v@:" + interfaceStateType + interfaceStateType;
+    class_addMethod(self, @selector(interfaceStateDidChange:fromState:), (IMP)StubImplementationWithTwoInterfaceStates, type1.c_str());
   }
 }
 
@@ -1085,19 +1094,19 @@ ASSynthesizeLockingMethodsWithMutex(__instanceLock__);
     ASPerformBlockOnMainThread(^{
       [self layout];
       [self _layoutClipCornersIfNeeded];
-      [self layoutDidFinish];
+      [self _layoutDidFinish];
     });
   }
 
   [self _fallbackUpdateSafeAreaOnChildren];
 }
 
-- (void)layoutDidFinish
+- (void)_layoutDidFinish
 {
-  // Hook for subclasses
   ASDisplayNodeAssertMainThread();
   ASAssertUnlocked(__instanceLock__);
   ASDisplayNodeAssertTrue(self.isNodeLoaded);
+  [self layoutDidFinish];
 }
 
 #pragma mark Calculation
@@ -3253,8 +3262,6 @@ ASDISPLAYNODE_INLINE BOOL subtreeIsRasterized(ASDisplayNode *node) {
     [del interfaceStateDidChange:newState fromState:oldState];
   }];
 }
-
-- (void)interfaceStateDidChange:(ASInterfaceState)newState fromState:(ASInterfaceState)oldState { }
 
 - (BOOL)shouldScheduleDisplayWithNewInterfaceState:(ASInterfaceState)newInterfaceState
 {
