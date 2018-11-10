@@ -252,7 +252,6 @@ static ASDisplayNodeMethodOverrides GetASDisplayNodeMethodOverrides(Class c)
 
   class_replaceMethod(self, @selector(_staticInitialize), staticInitialize, "v:@");
   
-  const char *interfacestate = @encode(ASInterfaceState);
   // Add stub implementations for global methods that the client didn't
   // implement in a category. We do this instead of hard-coding empty
   // implementations to avoid a linker warning when it merges categories.
@@ -270,6 +269,7 @@ static ASDisplayNodeMethodOverrides GetASDisplayNodeMethodOverrides(Class c)
     class_addMethod(self, @selector(didEnterVisibleState), noArgsImp, "v@:");
     class_addMethod(self, @selector(didExitVisibleState), noArgsImp, "v@:");
     class_addMethod(self, @selector(hierarchyDisplayDidFinish), noArgsImp, "v@:");
+    class_addMethod(self, @selector(asyncTraitCollectionDidChange), noArgsImp, "v@:");
     
     auto type0 = "v@:" + std::string(@encode(ASSizeRange));
     class_addMethod(self, @selector(willCalculateLayout:), (IMP)StubImplementationWithSizeRange, type0.c_str());
@@ -3834,12 +3834,6 @@ ASDISPLAYNODE_INLINE BOOL subtreeIsRasterized(ASDisplayNode *node) {
   }
 }
 
-#pragma mark - Trait Collection Hooks
-
-- (void)asyncTraitCollectionDidChange
-{
-  // Subclass override
-}
 @end
 
 #pragma mark - ASDisplayNode (Debugging)

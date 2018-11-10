@@ -224,6 +224,7 @@ AS_CATEGORY_IMPLEMENTABLE
  * The default implementation does nothing, so you can implement this method
  * in a category to apply global behaviors to nodes.
  */
+AS_CATEGORY_IMPLEMENTABLE
 - (void)asyncTraitCollectionDidChange;
 
 #pragma mark - Drawing
