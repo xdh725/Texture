@@ -270,6 +270,7 @@ static ASDisplayNodeMethodOverrides GetASDisplayNodeMethodOverrides(Class c)
     class_addMethod(self, @selector(didExitVisibleState), noArgsImp, "v@:");
     class_addMethod(self, @selector(hierarchyDisplayDidFinish), noArgsImp, "v@:");
     class_addMethod(self, @selector(asyncTraitCollectionDidChange), noArgsImp, "v@:");
+    class_addMethod(self, @selector(calculatedLayoutDidChange), noArgsImp, "v@:");
     
     auto type0 = "v@:" + std::string(@encode(ASSizeRange));
     class_addMethod(self, @selector(willCalculateLayout:), (IMP)StubImplementationWithSizeRange, type0.c_str());
@@ -1327,13 +1328,6 @@ ASSynthesizeLockingMethodsWithMutex(__instanceLock__);
   _pendingLayoutTransitionContext = nil;
 
   [self _pendingLayoutTransitionDidComplete];
-}
-
-- (void)willCalculateLayout:(ASSizeRange)constrainedSize { }
-
-- (void)calculatedLayoutDidChange
-{
-  // Subclass override
 }
 
 #pragma mark - Display
