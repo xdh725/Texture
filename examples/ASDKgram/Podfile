@@ -4,5 +4,6 @@ target 'Sample' do
   pod 'Texture/IGListKit', :path => '../..'
   pod 'Texture/PINRemoteImage', :path => '../..'
   pod 'Texture/Yoga', :path => '../..'
-  pod 'Weaver'
+  pod 'Weaver', :path => '../../../Weaver'
+  pod 'Weaver/Video', :path => '../../../Weaver'
 end
