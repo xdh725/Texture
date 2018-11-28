@@ -11,6 +11,7 @@
 
 #import <AsyncDisplayKit/ASAssert.h>
 #import <AsyncDisplayKit/ASBaseDefines.h>
+#import <AsyncDisplayKit/ASDisplayNode+FrameworkPrivate.h>
 #import <AsyncDisplayKit/ASDisplayNode+Subclasses.h>
 #import <AsyncDisplayKit/ASDisplayNodeExtras.h>
 #import <AsyncDisplayKit/ASDisplayNodeInternal.h>
@@ -124,8 +125,8 @@ NSString *const ASAnimatedImageDefaultRunLoopMode = NSRunLoopCommonModes;
 
 - (void)setCoverImageCompleted:(UIImage *)coverImage
 {
-  if (ASInterfaceStateIncludesDisplay(self.interfaceState)) {
-    ASLockScopeSelf();
+  ASLockScopeSelf();
+  if (ASInterfaceStateIncludesDisplay([self _locked_interfaceState])) {
     [self _locked_setCoverImageCompleted:coverImage];
   }
 }
@@ -231,8 +232,7 @@ NSString *const ASAnimatedImageDefaultRunLoopMode = NSRunLoopCommonModes;
 {
   ASAssertLocked(__instanceLock__);
   
-  // It should be safe to call self.interfaceState in this case as it will only grab the lock of the superclass
-  if (!ASInterfaceStateIncludesVisible(self.interfaceState)) {
+  if (!ASInterfaceStateIncludesVisible([self _locked_interfaceState])) {
     return;
   }
   

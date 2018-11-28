@@ -3071,6 +3071,12 @@ ASDISPLAYNODE_INLINE BOOL subtreeIsRasterized(ASDisplayNode *node) {
 - (ASInterfaceState)interfaceState
 {
   ASDN::MutexLocker l(__instanceLock__);
+  return [self _locked_interfaceState];
+}
+
+- (ASInterfaceState)_locked_interfaceState
+{
+  ASAssertLocked(__instanceLock__);
   return _interfaceState;
 }
 

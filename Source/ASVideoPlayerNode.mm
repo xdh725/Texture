@@ -16,6 +16,7 @@
 
 #import <AsyncDisplayKit/AsyncDisplayKit.h>
 #import <AsyncDisplayKit/ASDefaultPlaybackButton.h>
+#import <AsyncDisplayKit/ASDisplayNode+FrameworkPrivate.h>
 #import <AsyncDisplayKit/ASDisplayNode+Subclasses.h>
 #import <AsyncDisplayKit/ASDisplayNodeInternal.h>
 #import <AsyncDisplayKit/ASThread.h>
@@ -179,7 +180,7 @@ static void *ASVideoPlayerNodeContext = &ASVideoPlayerNodeContext;
   _pendingAsset = nil;
   
   // Set asset based on interface state
-  if ((ASInterfaceStateIncludesPreload(self.interfaceState))) {
+  if ((ASInterfaceStateIncludesPreload([self _locked_interfaceState]))) {
     // Don't hold the lock while accessing the subnode
     [self unlock];
     _videoNode.asset = asset;

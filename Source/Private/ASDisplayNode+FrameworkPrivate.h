@@ -130,6 +130,9 @@ __unused static NSString * _Nonnull NSStringFromASHierarchyStateChange(ASHierarc
 // Returns the bounds of the node without reaching the view or layer
 - (CGRect)_locked_threadSafeBounds;
 
+// Returns the interface state of the node. Needs to be called with the lock held.
+- (ASInterfaceState)_locked_interfaceState;
+
 // The -pendingInterfaceState holds the value that will be applied to -interfaceState by the
 // ASCATransactionQueue. If already applied, it matches -interfaceState. Thread-safe access.
 @property (nonatomic, readonly) ASInterfaceState pendingInterfaceState;
@@ -167,6 +170,7 @@ __unused static NSString * _Nonnull NSStringFromASHierarchyStateChange(ASHierarc
  */
 - (BOOL)supportsRangeManagedInterfaceState;
 
+// Returns if the node should display asynchronously. Needs to be called with lock held.
 - (BOOL)_locked_displaysAsynchronously;
 
 // The two methods below will eventually be exposed, but their names are subject to change.

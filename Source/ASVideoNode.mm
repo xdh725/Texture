@@ -333,7 +333,7 @@ static NSString * const kRate = @"rate";
       if ([change[NSKeyValueChangeNewKey] integerValue] == AVPlayerItemStatusReadyToPlay) {
         if (self.playerState != ASVideoNodePlayerStatePlaying) {
           self.playerState = ASVideoNodePlayerStateReadyToPlay;
-          if (_shouldBePlaying && ASInterfaceStateIncludesVisible(self.interfaceState)) {
+          if (_shouldBePlaying && ASInterfaceStateIncludesVisible([self _locked_interfaceState])) {
             l.unlock();
             [self play];
             l.lock();
@@ -354,7 +354,7 @@ static NSString * const kRate = @"rate";
       } else if (self.playerState != ASVideoNodePlayerStateFinished) {
         self.playerState = ASVideoNodePlayerStatePlaybackLikelyToKeepUpButNotPlaying;
       }
-      if (_shouldBePlaying && (_shouldAggressivelyRecoverFromStall || likelyToKeepUp) && ASInterfaceStateIncludesVisible(self.interfaceState)) {
+      if (_shouldBePlaying && (_shouldAggressivelyRecoverFromStall || likelyToKeepUp) && ASInterfaceStateIncludesVisible([self _locked_interfaceState])) {
         if (self.playerState == ASVideoNodePlayerStateLoading && _delegateFlags.delegateVideoNodeDidRecoverFromStall) {
           [self.delegate videoNodeDidRecoverFromStall:self];
         }
@@ -365,7 +365,7 @@ static NSString * const kRate = @"rate";
         return;
       }
     } else if ([keyPath isEqualToString:kplaybackBufferEmpty]) {
-      if (_shouldBePlaying && [change[NSKeyValueChangeNewKey] boolValue] == YES && ASInterfaceStateIncludesVisible(self.interfaceState)) {
+      if (_shouldBePlaying && [change[NSKeyValueChangeNewKey] boolValue] == YES && ASInterfaceStateIncludesVisible([self _locked_interfaceState])) {
         self.playerState = ASVideoNodePlayerStateLoading;
       }
     }
