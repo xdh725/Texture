@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ASDisplayNode (CatDeals)
 
-@property (nullable, nonatomic) NSString *catsLoggingID;
+@property (nullable, copy) NSString *catsLoggingID;
 
 @end
 

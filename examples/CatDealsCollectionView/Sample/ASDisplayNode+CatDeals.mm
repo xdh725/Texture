@@ -7,52 +7,55 @@
 
 #import "ASDisplayNode+CatDeals.h"
 
-struct NodeProps {
+#import <AsyncDisplayKit/ASThread.h>
+
+// A place to store info on any display node in this app.
+struct CatDealsNodeContext {
   NSString *loggingID = nil;
 };
 
-#define _props ((NodeProps &)*((NodeProps *)_userInfo))
+// Convenience to cast _context into our struct reference.
+NS_INLINE CatDealsNodeContext &GetNodeContext(ASDisplayNode *node) {
+  return *static_cast<CatDealsNodeContext *>(node->_context);
+}
 
 @implementation ASDisplayNode (CatDeals)
 
-- (void)globalInit
+- (void)baseDidInit
 {
-  _userInfo = new NodeProps{};
+  _context = new CatDealsNodeContext;
 }
 
-- (void)globalDealloc
+- (void)baseWillDealloc
 {
-  delete &_props;
+  delete &GetNodeContext(self);
 }
 
 - (void)setCatsLoggingID:(NSString *)catsLoggingID
 {
-  _props.loggingID = catsLoggingID;  
+  NSString *copy = [catsLoggingID copy];
+  ASLockScopeSelf();
+  GetNodeContext(self).loggingID = copy;
 }
 
 - (NSString *)catsLoggingID
 {
-  return _props.loggingID;
+  ASLockScopeSelf();
+  return GetNodeContext(self).loggingID;
 }
 
 - (void)didEnterVisibleState
 {
-  if (_props.loggingID) {
-    NSLog(@"Visible: %@", _props.loggingID);
+  if (NSString *loggingID = self.catsLoggingID) {
+    NSLog(@"Visible: %@", loggingID);
   }
 }
 
 - (void)didExitVisibleState
 {
-  if (_props.loggingID) {
-    NSLog(@"NotVisible: %@", _props.loggingID);
+  if (NSString *loggingID = self.catsLoggingID) {
+    NSLog(@"NotVisible: %@", loggingID);
   }
-}
-
-// A method wrapper for the _props macro. Useful in debugger `p [self catProps]`.
-- (NodeProps &)catProps
-{
-  return _props;  
 }
 
 @end

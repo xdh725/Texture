@@ -76,14 +76,14 @@ AS_CATEGORY_IMPLEMENTABLE
  * node initialization behavior. This method will be called by [ASDisplayNode init].
  */
 AS_CATEGORY_IMPLEMENTABLE
-- (void)globalInit;
+- (void)baseDidInit;
 
 /**
  * An empty method that you can implement in a category to add global
  * node deallocation behavior. This method will be called by [ASDisplayNode dealloc].
  */
 AS_CATEGORY_IMPLEMENTABLE
-- (void)globalDealloc;
+- (void)baseWillDealloc;
 
 #pragma mark - Layout
 /** @name Layout */

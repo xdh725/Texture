@@ -97,10 +97,10 @@ AS_EXTERN NSInteger const ASDefaultDrawingPriority;
 @interface ASDisplayNode : NSObject <ASLocking> {
 @public
   /**
-   * A field for clients to use as they please, for example in
-   * implementing category methods. Example usage can be found in CatDealsCollectionView.
+   * A field for clients to use as they please, for example in implementing category methods on
+   * the base class. Example usage can be found in CatDealsCollectionView.
    */
-  void *_userInfo;
+  void *_context;
 }
 
 /** @name Initializing a node object */

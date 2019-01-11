@@ -259,8 +259,8 @@ static ASDisplayNodeMethodOverrides GetASDisplayNodeMethodOverrides(Class c)
   // Note: addMethod will not do anything if a method already exists.
   if (self == ASDisplayNode.class) {
     IMP noArgsImp = (IMP)StubImplementationWithNoArgs;
-    class_addMethod(self, @selector(globalInit), noArgsImp, "v@:");
-    class_addMethod(self, @selector(globalDealloc), noArgsImp, "v@:");
+    class_addMethod(self, @selector(baseDidInit), noArgsImp, "v@:");
+    class_addMethod(self, @selector(baseWillDealloc), noArgsImp, "v@:");
     class_addMethod(self, @selector(didLoad), noArgsImp, "v@:");
     class_addMethod(self, @selector(layoutDidFinish), noArgsImp, "v@:");
     class_addMethod(self, @selector(didEnterPreloadState), noArgsImp, "v@:");
@@ -342,7 +342,7 @@ static ASDisplayNodeMethodOverrides GetASDisplayNodeMethodOverrides(Class c)
   _automaticallyRelayoutOnSafeAreaChanges = NO;
   _automaticallyRelayoutOnLayoutMarginsChanges = NO;
 
-  [self globalInit];
+  [self baseDidInit];
   ASDisplayNodeLogEvent(self, @"init");
 }
 
@@ -467,6 +467,7 @@ ASSynthesizeLockingMethodsWithMutex(__instanceLock__);
 - (void)dealloc
 {
   _flags.isDeallocating = YES;
+  [self baseWillDealloc];
 
   // Synchronous nodes may not be able to call the hierarchy notifications, so only enforce for regular nodes.
   ASDisplayNodeAssert(checkFlag(Synchronous) || !ASInterfaceStateIncludesVisible(_interfaceState), @"Node should always be marked invisible before deallocating. Node: %@", self);
@@ -487,8 +488,6 @@ ASSynthesizeLockingMethodsWithMutex(__instanceLock__);
 
   // TODO: Remove this? If supernode isn't already nil, this method isn't dealloc-safe anyway.
   [self _setSupernode:nil];
-  
-  [self globalDealloc];
 }
 
 #pragma mark - Loading
